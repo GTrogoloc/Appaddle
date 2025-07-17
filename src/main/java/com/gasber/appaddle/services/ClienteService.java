@@ -1,67 +1,93 @@
 package com.gasber.appaddle.services;
 
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
 import com.gasber.appaddle.dtos.ClienteDTO;
 import com.gasber.appaddle.mappers.ClienteMapper;
 import com.gasber.appaddle.models.Cliente;
 import com.gasber.appaddle.repositories.ClienteRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-//import java.util.stream.Collectors;
+import java.util.regex.Pattern;
+
+import com.gasber.appaddle.exceptions.ValidationException;
 
 @Service
 public class ClienteService {
-    private final ClienteRepository clienteRepository;
-    private final ClienteMapper clienteMapper;
+    
+    @Autowired
+    private ClienteRepository clienteRepository;
 
-    public ClienteService(ClienteRepository clienteRepository, ClienteMapper clienteMapper) {
-        this.clienteRepository = clienteRepository;
-        this.clienteMapper = clienteMapper;
-    }
+    @Autowired
+    private ClienteMapper clienteMapper;
 
     public ClienteDTO crearCliente(ClienteDTO dto) {
-        validar(dto);
+        validarCliente(dto);
         Cliente cliente = clienteMapper.toEntity(dto);
         Cliente guardado = clienteRepository.save(cliente);
         return clienteMapper.toDTO(guardado);
     }
 
-    public List<ClienteDTO> obtenerTodos() {
-        return clienteRepository.findAll()
-                .stream()
-                .map(clienteMapper::toDTO)
-                .collect(Collectors.toList());
+    public ClienteDTO actualizarCliente(Long id, ClienteDTO dto) {
+        validarCliente(dto);
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));
+        cliente.setNombre(dto.getNombre());
+        cliente.setApellido(dto.getApellido());
+        cliente.setTelefono(dto.getTelefono());
+        return clienteMapper.toDTO(clienteRepository.save(cliente));
     }
 
-    public ClienteDTO obtenerPorId(Long id) {
+    public ClienteDTO obtenerClientePorId(Long id) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));
         return clienteMapper.toDTO(cliente);
     }
 
-    public ClienteDTO actualizarCliente(Long id, ClienteDTO dto) {
-        Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        validar(dto);
-        clienteMapper.updateEntityFromDTO(dto, cliente);
-        Cliente actualizado = clienteRepository.save(cliente);
-        return clienteMapper.toDTO(actualizado);
+    public List<ClienteDTO> listarClientes() {
+        return clienteRepository.findAll().stream()
+                .map(clienteMapper::toDTO)
+                .toList();
     }
 
     public void eliminarCliente(Long id) {
-        if (!clienteRepository.existsById(id)) {
-            throw new RuntimeException("Cliente no encontrado");
-        }
         clienteRepository.deleteById(id);
     }
 
-    private void validar(ClienteDTO dto) {
-        if (dto.getTelefono() == null || dto.getTelefono().isBlank()) {
-            throw new RuntimeException("El teléfono no puede ser nulo ni vacío");
+
+    // ========================
+    // Validaciones personalizadas
+    // ========================
+    private void validarCliente(ClienteDTO dto) {
+        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) {
+            throw new ValidationException("nombre", "El nombre no puede estar vacío.");
         }
+        if (!esTexto(dto.getNombre())) {
+            throw new ValidationException("nombre", "El nombre solo puede contener letras.");
+        }
+
+        if (dto.getApellido() == null || dto.getApellido().trim().isEmpty()) {
+            throw new ValidationException("apellido", "El apellido no puede estar vacío.");
+        }
+        if (!esTexto(dto.getApellido())) {
+            throw new ValidationException("apellido", "El apellido solo puede contener letras.");
+        }
+
+        if (dto.getTelefono() == null || dto.getTelefono().trim().isEmpty()) {
+            throw new ValidationException("telefono", "El teléfono no puede estar vacío.");
+        }
+     
+        if (!esNumerico(dto.getTelefono())) {   
+            throw new ValidationException("telefono", "El teléfono solo puede contener números.");
+        }
+    }
+    
+    private boolean esTexto(String input) {
+        return Pattern.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", input);
+    }
+
+    private boolean esNumerico(String input) {
+        return Pattern.matches("^\\d+$", input);
     }
     
 }

@@ -1,8 +1,12 @@
 package com.gasber.appaddle.dtos;
 
-public class ClienteDTO {
+import io.swagger.v3.oas.annotations.media.Schema;
 
+public class ClienteDTO {
+    
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+
     private String nombre;
     private String apellido;
     private String telefono;
