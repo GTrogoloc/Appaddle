@@ -13,6 +13,8 @@ public class ReservaDTO {
     private String clienteApellido;
     private Long canchaId;
     private String canchaNombre;
+    private Long administradorId;
+    private String administradorUsuario;
 
     // Getters y Setters
 
@@ -87,5 +89,22 @@ public class ReservaDTO {
     public void setCanchaNombre(String canchaNombre) {
         this.canchaNombre = canchaNombre;
     }
+
+    public Long getAdministradorId() {
+        return administradorId;
+    }
+
+    public void setAdministradorId(Long administradorId) {
+        this.administradorId = administradorId;
+    }
+
+    public String getAdministradorUsuario() {
+        return administradorUsuario;
+    }
+
+    public void setAdministradorUsuario(String administradorUsuario) {
+        this.administradorUsuario = administradorUsuario;
+    }
+    
     
 }

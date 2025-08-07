@@ -12,9 +12,12 @@ import com.gasber.appaddle.models.Cancha;
 import com.gasber.appaddle.models.Cliente;
 import com.gasber.appaddle.models.EstadoReserva;
 import com.gasber.appaddle.models.Reserva;
+import com.gasber.appaddle.models.Administrador;
 import com.gasber.appaddle.repositories.CanchaRepository;
 import com.gasber.appaddle.repositories.ClienteRepository;
 import com.gasber.appaddle.repositories.ReservaRepository;
+import com.gasber.appaddle.repositories.AdministradorRepository;
+
 
 import java.util.List;
 
@@ -23,11 +26,13 @@ public class ReservaService {
      private final ReservaRepository reservaRepository;
     private final ClienteRepository clienteRepository;
     private final CanchaRepository canchaRepository;
+    private final AdministradorRepository administradorRepository;
 
-    public ReservaService(ReservaRepository reservaRepository, ClienteRepository clienteRepository, CanchaRepository canchaRepository) {
+    public ReservaService(ReservaRepository reservaRepository, ClienteRepository clienteRepository, CanchaRepository canchaRepository, AdministradorRepository administradorRepository) {
         this.reservaRepository = reservaRepository;
         this.clienteRepository = clienteRepository;
         this.canchaRepository = canchaRepository;
+        this.administradorRepository = administradorRepository;
     }
 
     // 1. Listar todas las reservas (DTOs)
@@ -47,13 +52,19 @@ public class ReservaService {
         Cancha cancha = canchaRepository.findById(dto.getCanchaId())
             .orElseThrow(() -> new RuntimeException("Cancha no encontrada"));
 
+        // BUSCAR ADMINISTRADOR
+        Administrador administrador = administradorRepository.findById(dto.getAdministradorId())
+            .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
+
         // Validar que la cancha esté libre para el rango horario
         if (!isCanchaDisponible(cancha, dto.getFechaHoraInicio(), dto.getDuracionMinutos())) {
             throw new RuntimeException("La cancha no está disponible en el horario solicitado");
         }
 
-        Reserva reserva = ReservaMapper.toEntity(dto, cliente, cancha);
+        Reserva reserva = ReservaMapper.toEntity(dto, cliente, cancha, administrador);
+        
         reserva.setEstado(EstadoReserva.RESERVADA);  // Estado inicial
+        
         Reserva guardada = reservaRepository.save(reserva);
 
         return ReservaMapper.toDTO(guardada);
@@ -118,10 +129,13 @@ public class ReservaService {
         if (dto.getDuracionMinutos() == null || dto.getDuracionMinutos() <= 0) {
             throw new RuntimeException("La duración debe ser mayor que 0");
         }
+        if (dto.getAdministradorId() == null) {
+            throw new RuntimeException("El id del administrador es obligatorio");
+        }
     }
 
     // Verifica si la cancha está libre para una reserva nueva
-    private boolean isCanchaDisponible(Cancha cancha, LocalDateTime inicio, int duracionMinutos) {
+        private boolean isCanchaDisponible(Cancha cancha, LocalDateTime inicio, int duracionMinutos) {
         LocalDateTime fin = inicio.plusMinutes(duracionMinutos);
 
         List<Reserva> reservasOcupadas = reservaRepository.findByCanchaAndEstadoIn(cancha, List.of(EstadoReserva.RESERVADA, EstadoReserva.EN_CURSO));
@@ -139,7 +153,7 @@ public class ReservaService {
     }
 
     // Similar a arriba pero excluye la reserva que se está actualizando (por id)
-    private boolean isCanchaDisponibleParaActualizacion(Cancha cancha, LocalDateTime inicio, int duracionMinutos, Long reservaId) {
+        private boolean isCanchaDisponibleParaActualizacion(Cancha cancha, LocalDateTime inicio, int duracionMinutos, Long reservaId) {
         LocalDateTime fin = inicio.plusMinutes(duracionMinutos);
 
         List<Reserva> reservasOcupadas = reservaRepository.findByCanchaAndEstadoIn(cancha, List.of(EstadoReserva.RESERVADA, EstadoReserva.EN_CURSO));

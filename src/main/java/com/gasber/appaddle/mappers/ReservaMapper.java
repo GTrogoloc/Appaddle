@@ -5,6 +5,7 @@ import com.gasber.appaddle.dtos.ReservaRequestDTO;
 import com.gasber.appaddle.models.Cancha;
 import com.gasber.appaddle.models.Cliente;
 import com.gasber.appaddle.models.Reserva;
+import com.gasber.appaddle.models.Administrador;
 
 public class ReservaMapper {
     public static ReservaDTO toDTO(Reserva reserva) {
@@ -18,15 +19,19 @@ public class ReservaMapper {
         dto.setClienteApellido(reserva.getCliente().getApellido());
         dto.setCanchaId(reserva.getCancha().getId());
         dto.setCanchaNombre(reserva.getCancha().getNombre());
+        dto.setAdministradorId(reserva.getAdministrador().getId());
+        dto.setAdministradorUsuario(reserva.getAdministrador().getUsuario());
         return dto;
     }
 
-    public static Reserva toEntity(ReservaRequestDTO dto, Cliente cliente, Cancha cancha) {
+    public static Reserva toEntity(ReservaRequestDTO dto, Cliente cliente, Cancha cancha, Administrador administrador) {
         Reserva reserva = new Reserva();
         reserva.setFechaHoraInicio(dto.getFechaHoraInicio());
         reserva.setDuracionMinutos(dto.getDuracionMinutos());
         reserva.setCliente(cliente);
         reserva.setCancha(cancha);
+        reserva.setAdministrador(administrador);
+
         return reserva;
     }
     

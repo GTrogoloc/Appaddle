@@ -7,6 +7,7 @@ public class ReservaRequestDTO {
     private Integer duracionMinutos;
     private Long clienteId;
     private Long canchaId;
+    private Long administradorId;
 
     // Getters y Setters
 
@@ -40,6 +41,14 @@ public class ReservaRequestDTO {
 
     public void setCanchaId(Long canchaId) {
         this.canchaId = canchaId;
+    }
+
+    public Long getAdministradorId() {
+        return administradorId;
+    }
+
+    public void setAdministradorId(Long administradorId) {
+        this.administradorId = administradorId;
     }
     
 }

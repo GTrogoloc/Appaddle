@@ -27,6 +27,10 @@ public class Reserva {
     @JoinColumn(name = "cancha_id", nullable = false)
     private Cancha cancha;
 
+    @ManyToOne
+    @JoinColumn(name = "administrador_id", nullable = false)
+    private Administrador administrador;
+
     private LocalDateTime fechaHoraInicio;
 
     private int duracionMinutos; // por ejemplo: 60, 90, etc.
@@ -66,6 +70,14 @@ public class Reserva {
 
     public void setCancha(Cancha cancha) {
         this.cancha = cancha;
+    }
+
+    public Administrador getAdministrador() {
+        return administrador;
+    }
+
+    public void setAdministrador(Administrador administrador) {
+        this.administrador = administrador;
     }
 
     public LocalDateTime getFechaHoraInicio() {
