@@ -8,13 +8,11 @@ public class ReservaDTO {
     private LocalDateTime fechaHoraInicio;
     private Integer duracionMinutos;
     private EstadoReserva estado;
-    private Long clienteId;
-    private String clienteNombre;
-    private String clienteApellido;
-    private Long canchaId;
-    private String canchaNombre;
-    private Long administradorId;
-    private String administradorUsuario;
+    private CanchaDTO cancha;
+    private ClienteDTO cliente;
+    private AdministradorDTO administrador;
+
+    public ReservaDTO() {}
 
     // Getters y Setters
 
@@ -50,61 +48,29 @@ public class ReservaDTO {
         this.estado = estado;
     }
 
-    public Long getClienteId() {
-        return clienteId;
+    public CanchaDTO getCancha() {
+        return cancha;
     }
 
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
+    public void setCancha(CanchaDTO cancha) {
+        this.cancha = cancha;
     }
 
-    public String getClienteNombre() {
-        return clienteNombre;
+    public ClienteDTO getCliente() {
+        return cliente;
     }
 
-    public void setClienteNombre(String clienteNombre) {
-        this.clienteNombre = clienteNombre;
+    public void setCliente(ClienteDTO cliente) {
+        this.cliente = cliente;
     }
 
-    public String getClienteApellido() {
-        return clienteApellido;
+    public AdministradorDTO getAdministrador() {
+        return administrador;
     }
 
-    public void setClienteApellido(String clienteApellido) {
-        this.clienteApellido = clienteApellido;
+    public void setAdministrador(AdministradorDTO administrador) {
+        this.administrador = administrador;
     }
 
-    public Long getCanchaId() {
-        return canchaId;
-    }
-
-    public void setCanchaId(Long canchaId) {
-        this.canchaId = canchaId;
-    }
-
-    public String getCanchaNombre() {
-        return canchaNombre;
-    }
-
-    public void setCanchaNombre(String canchaNombre) {
-        this.canchaNombre = canchaNombre;
-    }
-
-    public Long getAdministradorId() {
-        return administradorId;
-    }
-
-    public void setAdministradorId(Long administradorId) {
-        this.administradorId = administradorId;
-    }
-
-    public String getAdministradorUsuario() {
-        return administradorUsuario;
-    }
-
-    public void setAdministradorUsuario(String administradorUsuario) {
-        this.administradorUsuario = administradorUsuario;
-    }
-    
     
 }

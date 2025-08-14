@@ -1,5 +1,8 @@
 package com.gasber.appaddle.mappers;
 
+import com.gasber.appaddle.dtos.AdministradorDTO;
+import com.gasber.appaddle.dtos.CanchaDTO;
+import com.gasber.appaddle.dtos.ClienteDTO;
 import com.gasber.appaddle.dtos.ReservaDTO;
 import com.gasber.appaddle.dtos.ReservaRequestDTO;
 import com.gasber.appaddle.models.Cancha;
@@ -14,13 +17,27 @@ public class ReservaMapper {
         dto.setFechaHoraInicio(reserva.getFechaHoraInicio());
         dto.setDuracionMinutos(reserva.getDuracionMinutos());
         dto.setEstado(reserva.getEstado());
-        dto.setClienteId(reserva.getCliente().getId());
-        dto.setClienteNombre(reserva.getCliente().getNombre());
-        dto.setClienteApellido(reserva.getCliente().getApellido());
-        dto.setCanchaId(reserva.getCancha().getId());
-        dto.setCanchaNombre(reserva.getCancha().getNombre());
-        dto.setAdministradorId(reserva.getAdministrador().getId());
-        dto.setAdministradorUsuario(reserva.getAdministrador().getUsuario());
+
+        // ClienteDTO (solo id, nombre, apellido) ----
+        ClienteDTO clienteDTO = new ClienteDTO();
+        clienteDTO.setId(reserva.getCliente().getId());
+        clienteDTO.setNombre(reserva.getCliente().getNombre());
+        clienteDTO.setApellido(reserva.getCliente().getApellido());
+        clienteDTO.setTelefono(reserva.getCliente().getTelefono());
+        dto.setCliente(clienteDTO);
+
+        // CanchaDTO (solo id, nombre) ----
+        CanchaDTO canchaDTO = new CanchaDTO();
+        canchaDTO.setId(reserva.getCancha().getId());
+        canchaDTO.setNombre(reserva.getCancha().getNombre());
+        dto.setCancha(canchaDTO);
+
+        // AdministradorDTO (solo id, usuario) ----
+        AdministradorDTO adminDTO = new AdministradorDTO();
+        adminDTO.setId(reserva.getAdministrador().getId());
+        adminDTO.setUsuario(reserva.getAdministrador().getUsuario());
+        dto.setAdministrador(adminDTO);
+
         return dto;
     }
 

@@ -16,7 +16,7 @@ public class CanchaMapper {
         Cancha cancha = new Cancha();
         cancha.setId(dto.getId()); // opcional, se ignora si es null
         cancha.setNombre(dto.getNombre());
-        // No seteamos "activa", lo dejamos como true por defecto
+        cancha.setActiva(dto.isActiva());
         return cancha;
     }
 
