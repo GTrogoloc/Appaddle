@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 public class ReservaRequestDTO {
     private LocalDateTime fechaHoraInicio;
     private Integer duracionMinutos;
-    private Long clienteId;
+    private String nombre;
+    private String apellido;
+    private String telefono;
     private Long canchaId;
     private Long administradorId;
 
@@ -27,12 +29,28 @@ public class ReservaRequestDTO {
         this.duracionMinutos = duracionMinutos;
     }
 
-    public Long getClienteId() {
-        return clienteId;
+    public String getNombre(){
+        return nombre;
     }
 
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
+    public void setNombre(String nombre){
+        this.nombre = nombre;
+    }
+
+    public String getApellido(){
+        return apellido;
+    }
+
+    public void setApellido(String apellido){
+        this.apellido = apellido;
+    }
+
+    public String getTelefono(){
+        return telefono;
+    }
+
+    public void setTelefono(String telefono){
+        this.telefono = telefono;
     }
 
     public Long getCanchaId() {

@@ -9,12 +9,10 @@ import com.gasber.appaddle.dtos.ReservaDTO;
 import com.gasber.appaddle.dtos.ReservaRequestDTO;
 import com.gasber.appaddle.mappers.ReservaMapper;
 import com.gasber.appaddle.models.Cancha;
-import com.gasber.appaddle.models.Cliente;
 import com.gasber.appaddle.models.EstadoReserva;
 import com.gasber.appaddle.models.Reserva;
 import com.gasber.appaddle.models.Administrador;
 import com.gasber.appaddle.repositories.CanchaRepository;
-import com.gasber.appaddle.repositories.ClienteRepository;
 import com.gasber.appaddle.repositories.ReservaRepository;
 import com.gasber.appaddle.repositories.AdministradorRepository;
 
@@ -23,14 +21,12 @@ import java.util.List;
 
 @Service
 public class ReservaService {
-     private final ReservaRepository reservaRepository;
-    private final ClienteRepository clienteRepository;
+    private final ReservaRepository reservaRepository;
     private final CanchaRepository canchaRepository;
     private final AdministradorRepository administradorRepository;
 
-    public ReservaService(ReservaRepository reservaRepository, ClienteRepository clienteRepository, CanchaRepository canchaRepository, AdministradorRepository administradorRepository) {
+    public ReservaService(ReservaRepository reservaRepository, CanchaRepository canchaRepository, AdministradorRepository administradorRepository) {
         this.reservaRepository = reservaRepository;
-        this.clienteRepository = clienteRepository;
         this.canchaRepository = canchaRepository;
         this.administradorRepository = administradorRepository;
     }
@@ -43,11 +39,8 @@ public class ReservaService {
     }
 
     // 2. Crear reserva (validando disponibilidad)
-    public ReservaDTO crearReserva(ReservaRequestDTO dto) {
+        public ReservaDTO crearReserva(ReservaRequestDTO dto) {
         validarReserva(dto);
-
-        Cliente cliente = clienteRepository.findById(dto.getClienteId())
-            .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
         Cancha cancha = canchaRepository.findById(dto.getCanchaId())
             .orElseThrow(() -> new RuntimeException("Cancha no encontrada"));
@@ -61,8 +54,14 @@ public class ReservaService {
             throw new RuntimeException("La cancha no está disponible en el horario solicitado");
         }
 
-        Reserva reserva = ReservaMapper.toEntity(dto, cliente, cancha, administrador);
-        
+        Reserva reserva = new Reserva();
+        reserva.setNombre(dto.getNombre());
+        reserva.setApellido(dto.getApellido());
+        reserva.setTelefono(dto.getTelefono());
+        reserva.setCancha(cancha);
+        reserva.setAdministrador(administrador);
+        reserva.setFechaHoraInicio(dto.getFechaHoraInicio());
+        reserva.setDuracionMinutos(dto.getDuracionMinutos());
         reserva.setEstado(EstadoReserva.RESERVADA);  // Estado inicial
         
         Reserva guardada = reservaRepository.save(reserva);
@@ -84,8 +83,6 @@ public class ReservaService {
         Reserva reservaExistente = reservaRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
 
-        Cliente cliente = clienteRepository.findById(dto.getClienteId())
-            .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
         Cancha cancha = canchaRepository.findById(dto.getCanchaId())
             .orElseThrow(() -> new RuntimeException("Cancha no encontrada"));
@@ -95,7 +92,9 @@ public class ReservaService {
         }
 
         // Actualizo campos
-        reservaExistente.setCliente(cliente);
+        reservaExistente.setNombre(dto.getNombre());
+        reservaExistente.setApellido(dto.getApellido());
+        reservaExistente.setTelefono(dto.getTelefono());
         reservaExistente.setCancha(cancha);
         reservaExistente.setFechaHoraInicio(dto.getFechaHoraInicio());
         reservaExistente.setDuracionMinutos(dto.getDuracionMinutos());
@@ -117,8 +116,14 @@ public class ReservaService {
 
     // Validar campos mínimos
     private void validarReserva(ReservaRequestDTO dto) {
-        if (dto.getClienteId() == null) {
-            throw new RuntimeException("El id del cliente es obligatorio");
+        if (dto.getNombre() == null || dto.getNombre().isBlank()) {
+            throw new RuntimeException("El nombre es obligatorio");
+        }
+        if (dto.getApellido() == null || dto.getApellido().isBlank()){
+            throw new RuntimeException("El Apellido es obligatorio");
+        }
+        if (dto.getTelefono() == null || dto.getTelefono().isBlank()){
+            throw new RuntimeException("El telefono es obligatorio");
         }
         if (dto.getCanchaId() == null) {
             throw new RuntimeException("El id de la cancha es obligatorio");

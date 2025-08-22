@@ -5,11 +5,15 @@ import com.gasber.appaddle.models.EstadoReserva;
 
 public class ReservaDTO {
     private Long id;
+
+    private String nombre;
+    private String apellido;
+    private String telefono;
     private LocalDateTime fechaHoraInicio;
     private Integer duracionMinutos;
     private EstadoReserva estado;
     private CanchaDTO cancha;
-    private ClienteDTO cliente;
+
     private AdministradorDTO administrador;
 
     public ReservaDTO() {}
@@ -23,6 +27,15 @@ public class ReservaDTO {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public String getNombre() {return nombre;}
+    public void setNombre(String nombre){this.nombre = nombre;}
+
+    public String getApellido() {return apellido;}
+    public void setApellido (String apellido) {this.apellido = apellido;}
+
+    public String getTelefono () {return telefono;}
+    public void setTelefono (String telefono) {this.telefono = telefono;}
 
     public LocalDateTime getFechaHoraInicio() {
         return fechaHoraInicio;
@@ -56,13 +69,6 @@ public class ReservaDTO {
         this.cancha = cancha;
     }
 
-    public ClienteDTO getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(ClienteDTO cliente) {
-        this.cliente = cliente;
-    }
 
     public AdministradorDTO getAdministrador() {
         return administrador;
