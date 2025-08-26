@@ -2,9 +2,11 @@ package com.gasber.appaddle.dtos;
 
 import java.time.LocalDateTime;
 
+
 public class ReservaRequestDTO {
+
+    // Atributos
     private LocalDateTime fechaHoraInicio;
-    private Integer duracionMinutos;
     private String nombre;
     private String apellido;
     private String telefono;
@@ -19,14 +21,6 @@ public class ReservaRequestDTO {
 
     public void setFechaHoraInicio(LocalDateTime fechaHoraInicio) {
         this.fechaHoraInicio = fechaHoraInicio;
-    }
-
-    public Integer getDuracionMinutos() {
-        return duracionMinutos;
-    }
-
-    public void setDuracionMinutos(Integer duracionMinutos) {
-        this.duracionMinutos = duracionMinutos;
     }
 
     public String getNombre(){

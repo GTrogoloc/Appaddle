@@ -16,14 +16,19 @@ import com.gasber.appaddle.repositories.CanchaRepository;
 import com.gasber.appaddle.repositories.ReservaRepository;
 import com.gasber.appaddle.repositories.AdministradorRepository;
 
+import java.time.temporal.ChronoUnit;
+
 
 import java.util.List;
 
 @Service
 public class ReservaService {
+    
     private final ReservaRepository reservaRepository;
     private final CanchaRepository canchaRepository;
     private final AdministradorRepository administradorRepository;
+
+    private static final int DURACION_FIJA_MINUTOS = 90; // 🔹 Duración fija
 
     public ReservaService(ReservaRepository reservaRepository, CanchaRepository canchaRepository, AdministradorRepository administradorRepository) {
         this.reservaRepository = reservaRepository;
@@ -49,8 +54,11 @@ public class ReservaService {
         Administrador administrador = administradorRepository.findById(dto.getAdministradorId())
             .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
 
+             // Truncar a minutos
+             LocalDateTime inicio = dto.getFechaHoraInicio().truncatedTo(ChronoUnit.MINUTES);
+
         // Validar que la cancha esté libre para el rango horario
-        if (!isCanchaDisponible(cancha, dto.getFechaHoraInicio(), dto.getDuracionMinutos())) {
+        if (!isCanchaDisponible(cancha, dto.getFechaHoraInicio())) {
             throw new RuntimeException("La cancha no está disponible en el horario solicitado");
         }
 
@@ -60,13 +68,13 @@ public class ReservaService {
         reserva.setTelefono(dto.getTelefono());
         reserva.setCancha(cancha);
         reserva.setAdministrador(administrador);
-        reserva.setFechaHoraInicio(dto.getFechaHoraInicio());
-        reserva.setDuracionMinutos(dto.getDuracionMinutos());
+        reserva.setFechaHoraInicio(inicio);
+        reserva.setFechaHoraFin(inicio.plusMinutes(DURACION_FIJA_MINUTOS));
         reserva.setEstado(EstadoReserva.RESERVADA);  // Estado inicial
         
         Reserva guardada = reservaRepository.save(reserva);
 
-        return ReservaMapper.toDTO(guardada);
+        return ReservaMapper.toDTO(guardada); // fechaHoraFin se calcula en el mapper
     }
 
     // 3. Obtener reserva por ID
@@ -86,8 +94,10 @@ public class ReservaService {
 
         Cancha cancha = canchaRepository.findById(dto.getCanchaId())
             .orElseThrow(() -> new RuntimeException("Cancha no encontrada"));
+           
+            LocalDateTime inicio = dto.getFechaHoraInicio().truncatedTo(ChronoUnit.MINUTES);
 
-        if (!isCanchaDisponibleParaActualizacion(cancha, dto.getFechaHoraInicio(), dto.getDuracionMinutos(), id)) {
+        if (!isCanchaDisponibleParaActualizacion(cancha, dto.getFechaHoraInicio(), id)) {
             throw new RuntimeException("La cancha no está disponible en el horario solicitado");
         }
 
@@ -96,8 +106,8 @@ public class ReservaService {
         reservaExistente.setApellido(dto.getApellido());
         reservaExistente.setTelefono(dto.getTelefono());
         reservaExistente.setCancha(cancha);
-        reservaExistente.setFechaHoraInicio(dto.getFechaHoraInicio());
-        reservaExistente.setDuracionMinutos(dto.getDuracionMinutos());
+        reservaExistente.setFechaHoraInicio(inicio);
+        reservaExistente.setFechaHoraFin(inicio.plusMinutes(DURACION_FIJA_MINUTOS));
         // Opcional: actualizar estado si querés, o dejarlo igual
 
         Reserva actualizada = reservaRepository.save(reservaExistente);
@@ -131,46 +141,38 @@ public class ReservaService {
         if (dto.getFechaHoraInicio() == null) {
             throw new RuntimeException("La fecha y hora de inicio es obligatoria");
         }
-        if (dto.getDuracionMinutos() == null || dto.getDuracionMinutos() <= 0) {
-            throw new RuntimeException("La duración debe ser mayor que 0");
-        }
         if (dto.getAdministradorId() == null) {
             throw new RuntimeException("El id del administrador es obligatorio");
         }
     }
 
-    // Verifica si la cancha está libre para una reserva nueva
-        private boolean isCanchaDisponible(Cancha cancha, LocalDateTime inicio, int duracionMinutos) {
-        LocalDateTime fin = inicio.plusMinutes(duracionMinutos);
+   
+   // Verifica si la cancha está libre para un nuevo turno
+    private boolean isCanchaDisponible(Cancha cancha, LocalDateTime inicio) {
+    LocalDateTime fin = inicio.plusMinutes(DURACION_FIJA_MINUTOS);
 
-        List<Reserva> reservasOcupadas = reservaRepository.findByCanchaAndEstadoIn(cancha, List.of(EstadoReserva.RESERVADA, EstadoReserva.EN_CURSO));
+    List<Reserva> reservasOcupadas = reservaRepository.findByCanchaAndEstadoIn(
+            cancha, List.of(EstadoReserva.RESERVADA, EstadoReserva.EN_CURSO));
 
-        for (Reserva r : reservasOcupadas) {
-            LocalDateTime rInicio = r.getFechaHoraInicio();
-            LocalDateTime rFin = rInicio.plusMinutes(r.getDuracionMinutos());
-
-            // Chequeo si se solapan los intervalos
-            if (inicio.isBefore(rFin) && fin.isAfter(rInicio)) {
-                return false;
-            }
+    for (Reserva r : reservasOcupadas) {
+        if (inicio.isBefore(r.getFechaHoraFin()) && fin.isAfter(r.getFechaHoraInicio())) {
+            return false; // se solapan
         }
-        return true;
     }
+    return true;
+}
 
-    // Similar a arriba pero excluye la reserva que se está actualizando (por id)
-        private boolean isCanchaDisponibleParaActualizacion(Cancha cancha, LocalDateTime inicio, int duracionMinutos, Long reservaId) {
-        LocalDateTime fin = inicio.plusMinutes(duracionMinutos);
+    // Verifica disponibilidad para actualización (excluyendo la reserva actual)
+    private boolean isCanchaDisponibleParaActualizacion(Cancha cancha, LocalDateTime inicio, Long reservaId) {
+        LocalDateTime fin = inicio.plusMinutes(DURACION_FIJA_MINUTOS);
 
-        List<Reserva> reservasOcupadas = reservaRepository.findByCanchaAndEstadoIn(cancha, List.of(EstadoReserva.RESERVADA, EstadoReserva.EN_CURSO));
+        List<Reserva> reservasOcupadas = reservaRepository.findByCanchaAndEstadoIn(
+                cancha, List.of(EstadoReserva.RESERVADA, EstadoReserva.EN_CURSO));
 
         for (Reserva r : reservasOcupadas) {
-            if (r.getId().equals(reservaId)) continue;  // Excluye la reserva que actualizamos
-
-            LocalDateTime rInicio = r.getFechaHoraInicio();
-            LocalDateTime rFin = rInicio.plusMinutes(r.getDuracionMinutos());
-
-            if (inicio.isBefore(rFin) && fin.isAfter(rInicio)) {
-                return false;
+            if (r.getId().equals(reservaId)) continue; // excluye reserva actual
+            if (inicio.isBefore(r.getFechaHoraFin()) && fin.isAfter(r.getFechaHoraInicio())) {
+                return false; // se solapan
             }
         }
         return true;

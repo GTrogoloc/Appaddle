@@ -1,7 +1,9 @@
 package com.gasber.appaddle.dtos;
 
 import java.time.LocalDateTime;
+
 import com.gasber.appaddle.models.EstadoReserva;
+
 
 public class ReservaDTO {
     private Long id;
@@ -10,10 +12,9 @@ public class ReservaDTO {
     private String apellido;
     private String telefono;
     private LocalDateTime fechaHoraInicio;
-    private Integer duracionMinutos;
+    private LocalDateTime fechaHoraFin;
     private EstadoReserva estado;
     private CanchaDTO cancha;
-
     private AdministradorDTO administrador;
 
     public ReservaDTO() {}
@@ -45,13 +46,8 @@ public class ReservaDTO {
         this.fechaHoraInicio = fechaHoraInicio;
     }
 
-    public Integer getDuracionMinutos() {
-        return duracionMinutos;
-    }
-
-    public void setDuracionMinutos(Integer duracionMinutos) {
-        this.duracionMinutos = duracionMinutos;
-    }
+    public LocalDateTime getFechaHoraFin() { return fechaHoraFin; }
+    public void setFechaHoraFin(LocalDateTime fechaHoraFin) { this.fechaHoraFin = fechaHoraFin; }
 
     public EstadoReserva getEstado() {
         return estado;

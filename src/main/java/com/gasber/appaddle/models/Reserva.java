@@ -7,6 +7,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -43,24 +45,33 @@ public class Reserva {
     private Administrador administrador;
 
     //DATOS DE RESERVA
+    @Column(nullable = false)
     private LocalDateTime fechaHoraInicio;
-
-    private int duracionMinutos; // por ejemplo: 60, 90, etc.
+    @Column(nullable = false)
+    private LocalDateTime fechaHoraFin;
 
     @Enumerated(EnumType.STRING)
     private EstadoReserva estado = EstadoReserva.RESERVADA;
 
     public Reserva() {}
 
-    public Reserva(String nombre, String apellido, String telefono, Cancha cancha, LocalDateTime fechaHoraInicio, int duracionMinutos, EstadoReserva estado) {
+    public Reserva(String nombre, String apellido, String telefono, Cancha cancha, LocalDateTime fechaHoraInicio, EstadoReserva estado) {
        
         this.nombre = nombre;
         this.apellido = apellido;
         this.telefono = telefono;
         this.cancha = cancha;
         this.fechaHoraInicio = fechaHoraInicio;
-        this.duracionMinutos = duracionMinutos;
+        this.fechaHoraFin = fechaHoraInicio.plusMinutes(90); //  calculado fijo
         this.estado = estado;
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void calcularFin() {
+        if (this.fechaHoraInicio != null) {
+            this.fechaHoraFin = this.fechaHoraInicio.plusMinutes(90);
+        }
     }
 
     public Long getId() {
@@ -105,12 +116,12 @@ public class Reserva {
         this.fechaHoraInicio = fechaHoraInicio;
     }
 
-    public int getDuracionMinutos() {
-        return duracionMinutos;
+    public LocalDateTime getFechaHoraFin() {
+        return fechaHoraFin;
     }
 
-    public void setDuracionMinutos(int duracionMinutos) {
-        this.duracionMinutos = duracionMinutos;
+    public void setFechaHoraFin(LocalDateTime fechaHoraFin) {
+        this.fechaHoraFin = fechaHoraFin;
     }
 
     public EstadoReserva getEstado() {

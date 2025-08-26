@@ -8,6 +8,7 @@ import com.gasber.appaddle.models.Cancha;
 import com.gasber.appaddle.models.Reserva;
 import com.gasber.appaddle.models.Administrador;
 
+
 public class ReservaMapper {
 
     public static ReservaDTO toDTO(Reserva reserva) {
@@ -17,7 +18,7 @@ public class ReservaMapper {
         dto.setApellido(reserva.getApellido());
         dto.setTelefono(reserva.getTelefono());
         dto.setFechaHoraInicio(reserva.getFechaHoraInicio());
-        dto.setDuracionMinutos(reserva.getDuracionMinutos());
+        dto.setFechaHoraFin(reserva.getFechaHoraFin()); //La duracion se calcula aca. (HoraInicio + 90min)
         dto.setEstado(reserva.getEstado());
 
 
@@ -43,7 +44,7 @@ public class ReservaMapper {
         reserva.setApellido(dto.getApellido());
         reserva.setTelefono(dto.getTelefono());
         reserva.setFechaHoraInicio(dto.getFechaHoraInicio());
-        reserva.setDuracionMinutos(dto.getDuracionMinutos());
+        reserva.setFechaHoraFin(dto.getFechaHoraInicio().plusMinutes(90)); // calculamos solo aquí //Calcular automáticamente fechaHoraFin sumando 90 minutos
         reserva.setCancha(cancha);
         reserva.setAdministrador(administrador);
 
