@@ -14,11 +14,10 @@ import com.gasber.appaddle.models.Reserva;
 import com.gasber.appaddle.models.Administrador;
 import com.gasber.appaddle.repositories.CanchaRepository;
 import com.gasber.appaddle.repositories.ReservaRepository;
+import com.gasber.appaddle.security.JwtUtil;
 import com.gasber.appaddle.repositories.AdministradorRepository;
 
 import java.time.temporal.ChronoUnit;
-
-
 import java.util.List;
 
 @Service
@@ -27,16 +26,42 @@ public class ReservaService {
     private final ReservaRepository reservaRepository;
     private final CanchaRepository canchaRepository;
     private final AdministradorRepository administradorRepository;
+    private final JwtUtil jwtUtil;
 
     private static final int DURACION_FIJA_MINUTOS = 90; // 🔹 Duración fija
 
-    public ReservaService(ReservaRepository reservaRepository, CanchaRepository canchaRepository, AdministradorRepository administradorRepository) {
+    public ReservaService(ReservaRepository reservaRepository, CanchaRepository canchaRepository, AdministradorRepository administradorRepository,
+            JwtUtil jwtUtil) {
         this.reservaRepository = reservaRepository;
         this.canchaRepository = canchaRepository;
         this.administradorRepository = administradorRepository;
+        this.jwtUtil = jwtUtil;
     }
 
-    // 1. Listar todas las reservas (DTOs)
+    // Método privado para token
+    private Administrador obtenerAdministradorDesdeToken(String token) {
+        if (!jwtUtil.esValido(token)) {
+            throw new RuntimeException("Token inválido");
+        }
+
+        String usuarioAdmin = jwtUtil.obtenerUsuarioDelToken(token);
+
+        return administradorRepository.findByUsuario(usuarioAdmin)
+                .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
+    }
+
+//Listar todas las reservas de un admin
+    public List<ReservaDTO> listarReservasPorAdmin(String token) {
+        Administrador admin = obtenerAdministradorDesdeToken(token);
+    
+        return reservaRepository.findAll().stream()
+            .filter(r -> r.getAdministrador().getId().equals(admin.getId()))
+            .map(ReservaMapper::toDTO)
+            .collect(Collectors.toList());
+    }
+
+
+    // Listar todas las reservas
     public List<ReservaDTO> listarTodas() {
         return reservaRepository.findAll().stream()
             .map(ReservaMapper::toDTO)
@@ -44,15 +69,13 @@ public class ReservaService {
     }
 
     // 2. Crear reserva (validando disponibilidad)
-        public ReservaDTO crearReserva(ReservaRequestDTO dto) {
+        public ReservaDTO crearReserva(ReservaRequestDTO dto, String token) {
         validarReserva(dto);
 
         Cancha cancha = canchaRepository.findById(dto.getCanchaId())
             .orElseThrow(() -> new RuntimeException("Cancha no encontrada"));
 
-        // BUSCAR ADMINISTRADOR
-        Administrador administrador = administradorRepository.findById(dto.getAdministradorId())
-            .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
+        Administrador admin = obtenerAdministradorDesdeToken(token);
 
              // Truncar a minutos
              LocalDateTime inicio = dto.getFechaHoraInicio().truncatedTo(ChronoUnit.MINUTES);
@@ -67,7 +90,7 @@ public class ReservaService {
         reserva.setApellido(dto.getApellido());
         reserva.setTelefono(dto.getTelefono());
         reserva.setCancha(cancha);
-        reserva.setAdministrador(administrador);
+        reserva.setAdministrador(admin);
         reserva.setFechaHoraInicio(inicio);
         reserva.setFechaHoraFin(inicio.plusMinutes(DURACION_FIJA_MINUTOS));
         reserva.setEstado(EstadoReserva.RESERVADA);  // Estado inicial
@@ -85,19 +108,30 @@ public class ReservaService {
     }
 
     // 4. Actualizar reserva (validando disponibilidad, excluyendo la reserva que se actualiza)
-    public ReservaDTO actualizarReserva(Long id, ReservaRequestDTO dto) {
+    public ReservaDTO actualizarReserva(Long id, ReservaRequestDTO dto, String token) {
         validarReserva(dto);
-
+        
+        //Obtener admin desde token
+        String usuarioAdmin = jwtUtil.obtenerUsuarioDelToken(token);
+        Administrador admin = administradorRepository.findByUsuario(usuarioAdmin)
+            .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
+        
+        //Obtener reserva existente
         Reserva reservaExistente = reservaRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
 
+         // Validar que la reserva pertenece al admin
+        if (!reservaExistente.getAdministrador().getId().equals(admin.getId())) {
+        throw new RuntimeException("No podés actualizar una reserva que no es tuya");
+        }
 
         Cancha cancha = canchaRepository.findById(dto.getCanchaId())
             .orElseThrow(() -> new RuntimeException("Cancha no encontrada"));
            
-            LocalDateTime inicio = dto.getFechaHoraInicio().truncatedTo(ChronoUnit.MINUTES);
-
-        if (!isCanchaDisponibleParaActualizacion(cancha, dto.getFechaHoraInicio(), id)) {
+        LocalDateTime inicio = dto.getFechaHoraInicio().truncatedTo(ChronoUnit.MINUTES);
+        
+        //validar disponibilidad de la cancha, excluyendo la reserva actual
+        if (!isCanchaDisponibleParaActualizacion(cancha, inicio, id)) {
             throw new RuntimeException("La cancha no está disponible en el horario solicitado");
         }
 
@@ -115,10 +149,23 @@ public class ReservaService {
     }
 
     // 5. Eliminar reserva
-    public void eliminarReserva(Long id) {
-        Reserva reserva = reservaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
-        reservaRepository.delete(reserva);
+    public void eliminarReserva(Long id, String token) {
+  
+        // Obtener admin desde token
+    String usuarioAdmin = jwtUtil.obtenerUsuarioDelToken(token);
+    Administrador admin = administradorRepository.findByUsuario(usuarioAdmin)
+        .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
+
+    // Obtener reserva
+    Reserva reserva = reservaRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+    // Validar que pertenece al admin
+    if (!reserva.getAdministrador().getId().equals(admin.getId())) {
+        throw new RuntimeException("No podés eliminar una reserva que no es tuya");
+    }
+
+    reservaRepository.delete(reserva);
     }
 
     // ----------------------------
@@ -179,3 +226,4 @@ public class ReservaService {
     }
     
 }
+

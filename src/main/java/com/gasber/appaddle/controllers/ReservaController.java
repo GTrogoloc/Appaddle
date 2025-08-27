@@ -17,11 +17,13 @@ import com.gasber.appaddle.services.ReservaService;
 
 import java.util.List;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 
 @RestController
 @RequestMapping("/reservas")
 public class ReservaController {
+    
     private final ReservaService reservaService;
 
     public ReservaController(ReservaService reservaService) {
@@ -35,6 +37,20 @@ public class ReservaController {
         ApiResponse<List<ReservaDTO>> response = new ApiResponse<>(
             200,
             "Todas las reservas",
+            reservas
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    //Mis reservas
+    @GetMapping("/mis-reservas")
+    public ResponseEntity<ApiResponse<List<ReservaDTO>>> listarReservasPorAdmin(@RequestHeader("Authorization") String authHeader) {
+        
+        String token = authHeader.replace("Bearer ", "");
+        List<ReservaDTO> reservas = reservaService.listarReservasPorAdmin(token);
+        ApiResponse<List<ReservaDTO>> response = new ApiResponse<>(
+            200,
+            "Reservas del administrador",
             reservas
         );
         return ResponseEntity.ok(response);
@@ -54,8 +70,12 @@ public class ReservaController {
 
     // Crear una nueva reserva
     @PostMapping
-    public ResponseEntity<ApiResponse<ReservaDTO>> crearReserva(@RequestBody ReservaRequestDTO dto) {
-        ReservaDTO reserva = reservaService.crearReserva(dto);
+    public ResponseEntity<ApiResponse<ReservaDTO>> crearReserva(
+        @RequestBody ReservaRequestDTO dto,
+        @RequestHeader("Authorization") String authHeader) {
+            String token = authHeader.replace("Bearer ", "");
+
+        ReservaDTO reserva = reservaService.crearReserva(dto, token);
         ApiResponse<ReservaDTO> response = new ApiResponse<>(
             201,
             "Reserva creada exitosamente",
@@ -64,10 +84,14 @@ public class ReservaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // Actualizar una reserva existente
+    // Actualizar una reserva existente (Requiere token)
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<ReservaDTO>> actualizarReserva(@PathVariable Long id, @RequestBody ReservaRequestDTO dto) {
-        ReservaDTO reservaActualizada = reservaService.actualizarReserva(id, dto);
+    public ResponseEntity<ApiResponse<ReservaDTO>> actualizarReserva(
+        @PathVariable Long id,
+        @RequestBody ReservaRequestDTO dto,
+        @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        ReservaDTO reservaActualizada = reservaService.actualizarReserva(id, dto, token);
         ApiResponse<ReservaDTO> response = new ApiResponse<>(
             200,
             "Reserva actualizada exitosamente",
@@ -76,10 +100,13 @@ public class ReservaController {
         return ResponseEntity.ok(response);
     }
 
-    // Eliminar una reserva
+    // Eliminar una reserva (Requiere token)
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> eliminarReserva(@PathVariable Long id) {
-        reservaService.eliminarReserva(id);
+    public ResponseEntity<ApiResponse<String>> eliminarReserva(
+        @PathVariable Long id,
+        @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        reservaService.eliminarReserva(id, token);
         ApiResponse<String> response = new ApiResponse<>(
             200,
             "Reserva eliminada exitosamente",

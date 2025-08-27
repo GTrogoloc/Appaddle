@@ -4,7 +4,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.gasber.appaddle.dtos.AdministradorRequestDTO;
+import com.gasber.appaddle.dtos.ApiResponse;
 import com.gasber.appaddle.dtos.LoginRequestDTO;
+import com.gasber.appaddle.dtos.LoginResponseDTO;
 import com.gasber.appaddle.services.AdministradorService;
 
 @RestController
@@ -19,15 +21,21 @@ public class AdministradorController {
     }
 
     @PostMapping("/crear")
-    public ResponseEntity<String> crearAdministrador(@RequestBody AdministradorRequestDTO dto) {
+    public ResponseEntity<ApiResponse<String>> crearAdministrador(@RequestBody AdministradorRequestDTO dto) {
         administradorService.crearAdministrador(dto);
-        return ResponseEntity.ok("Administrador creado correctamente");
+        ApiResponse<String> response = new ApiResponse<>(200, "Administrador creado exitosamente", null);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDTO dto) {
-        administradorService.login(dto);
-        return ResponseEntity.ok("Login exitoso");
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> login(@RequestBody LoginRequestDTO dto) {
+       // Llamamos al servicio, que devuelve usuario + token
+    LoginResponseDTO loginResponse = administradorService.login(dto);
+    
+    // Creamos la respuesta genérica con el DTO completo
+    ApiResponse<LoginResponseDTO> response = new ApiResponse<>(200, "Login exitoso", loginResponse);
+    
+    return ResponseEntity.ok(response);
     }
     
 }

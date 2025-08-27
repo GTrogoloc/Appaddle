@@ -2,17 +2,22 @@ package com.gasber.appaddle.services;
 
 import com.gasber.appaddle.dtos.AdministradorRequestDTO;
 import com.gasber.appaddle.dtos.LoginRequestDTO;
+import com.gasber.appaddle.dtos.LoginResponseDTO;
 import com.gasber.appaddle.models.Administrador;
 import com.gasber.appaddle.repositories.AdministradorRepository;
+import com.gasber.appaddle.security.JwtUtil;
 
 import org.springframework.stereotype.Service;
 
 @Service
 public class AdministradorService {
-    private final AdministradorRepository administradorRepository;
 
-    public AdministradorService(AdministradorRepository administradorRepository) {
+    private final AdministradorRepository administradorRepository;
+    private final JwtUtil jwtUtil;
+
+    public AdministradorService(AdministradorRepository administradorRepository, JwtUtil jwtUtil) {
         this.administradorRepository = administradorRepository;
+        this.jwtUtil = jwtUtil;
     }
 
     public void crearAdministrador(AdministradorRequestDTO dto) {
@@ -22,24 +27,24 @@ public class AdministradorService {
             throw new RuntimeException("Ya existe un administrador con ese usuario");
         }
 
-        if (administradorRepository.count() > 0) {
-            throw new RuntimeException("Ya hay un administrador registrado");
-        }
-
         Administrador admin = new Administrador(dto.getUsuario(), dto.getContraseña());
         administradorRepository.save(admin);
     }
 
-    public void login(LoginRequestDTO dto) {
+    //Nuevo metodo para generar el token
+    public LoginResponseDTO login(LoginRequestDTO dto) {
         validarCampos(dto.getUsuario(), dto.getContraseña());
-
+        
         Administrador admin = administradorRepository.findByUsuario(dto.getUsuario())
                 .orElseThrow(() -> new RuntimeException("Usuario incorrecto"));
 
         if (!admin.getContraseña().equals(dto.getContraseña())) {
             throw new RuntimeException("Contraseña incorrecta");
         }
-    }
+    
+        String token = jwtUtil.generarToken(admin.getUsuario());
+        return new LoginResponseDTO(admin.getUsuario(), token);
+}
 
     private void validarCampos(String usuario, String contraseña) {
         if (usuario == null || usuario.trim().isEmpty()) {
