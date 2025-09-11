@@ -21,10 +21,11 @@ public class AdministradorController {
     }
 
     @PostMapping("/crear")
-    public ResponseEntity<ApiResponse<String>> crearAdministrador(@RequestBody AdministradorRequestDTO dto) {
-        administradorService.crearAdministrador(dto);
-        ApiResponse<String> response = new ApiResponse<>(200, "Administrador creado exitosamente", null);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> crearAdministrador(@RequestBody AdministradorRequestDTO dto) {
+        LoginResponseDTO responseDTO = administradorService.crearAdministrador(dto);
+        ApiResponse<LoginResponseDTO> response =
+                new ApiResponse<>(201, "Administrador creado exitosamente", responseDTO);
+        return ResponseEntity.status(201).body(response);
     }
 
     @PostMapping("/login")

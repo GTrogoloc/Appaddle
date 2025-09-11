@@ -1,5 +1,6 @@
 package com.gasber.appaddle.services;
 
+import com.gasber.appaddle.dtos.AdministradorDTO;
 import com.gasber.appaddle.dtos.AdministradorRequestDTO;
 import com.gasber.appaddle.dtos.LoginRequestDTO;
 import com.gasber.appaddle.dtos.LoginResponseDTO;
@@ -20,7 +21,8 @@ public class AdministradorService {
         this.jwtUtil = jwtUtil;
     }
 
-    public void crearAdministrador(AdministradorRequestDTO dto) {
+    //CREAR NUEVO ADMIN Y DEVOLVER DTO CON TOKEN + INFO DEL ADMIN
+    public LoginResponseDTO crearAdministrador(AdministradorRequestDTO dto) {
         validarCampos(dto.getUsuario(), dto.getContraseña());
 
         if (administradorRepository.existsByUsuario(dto.getUsuario())) {
@@ -29,9 +31,17 @@ public class AdministradorService {
 
         Administrador admin = new Administrador(dto.getUsuario(), dto.getContraseña());
         administradorRepository.save(admin);
+
+        //GENERAR TOKEN
+        String token = jwtUtil.generarToken(admin.getUsuario());
+
+        //MAPEAR a DTO
+        AdministradorDTO adminDTO = new AdministradorDTO(admin.getId(), admin.getUsuario());
+
+        return new LoginResponseDTO(token, adminDTO);
     }
 
-    //Nuevo metodo para generar el token
+    //Nuevo metodo para generar el token e info del admin
     public LoginResponseDTO login(LoginRequestDTO dto) {
         validarCampos(dto.getUsuario(), dto.getContraseña());
         
@@ -43,7 +53,9 @@ public class AdministradorService {
         }
     
         String token = jwtUtil.generarToken(admin.getUsuario());
-        return new LoginResponseDTO(admin.getUsuario(), token);
+       AdministradorDTO adminDTO = new AdministradorDTO(admin.getId(), admin.getUsuario());
+
+        return new LoginResponseDTO(token, adminDTO);
 }
 
     private void validarCampos(String usuario, String contraseña) {

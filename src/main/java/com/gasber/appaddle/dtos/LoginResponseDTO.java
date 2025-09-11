@@ -1,24 +1,16 @@
 package com.gasber.appaddle.dtos;
 
 public class LoginResponseDTO {
-    private String usuario;
     private String token;
+    private AdministradorDTO administrador;
 
     public LoginResponseDTO() {}
 
-    public LoginResponseDTO(String usuario, String token) {
-        this.usuario = usuario;
+    public LoginResponseDTO(String token, AdministradorDTO administrador) {
         this.token = token;
+        this.administrador = administrador;
     }
 //getters y setters!
-    public String getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
-    }
-
     public String getToken() {
         return token;
     }
@@ -26,5 +18,13 @@ public class LoginResponseDTO {
     public void setToken(String token) {
         this.token = token;
     }
+
+    public AdministradorDTO getAdministrador() {
+        return administrador;
+    }
     
+    public void setAdministrador(AdministradorDTO administrador) {
+        this.administrador = administrador;
+    }
+
 }

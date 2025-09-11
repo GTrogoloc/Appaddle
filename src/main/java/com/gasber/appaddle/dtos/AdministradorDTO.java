@@ -6,6 +6,11 @@ public class AdministradorDTO {
 
     public AdministradorDTO() {}    
 
+    public AdministradorDTO(Long id, String usuario) {
+        this.id = id;
+        this.usuario = usuario;
+    }
+
     public Long getId() {
         return id;
     }
