@@ -40,3 +40,6 @@ Thumbs.db
 
 # === Spring Boot DevTools ===
 spring-boot-devtools.properties
+
+# === Config local ===
+application-local.properties

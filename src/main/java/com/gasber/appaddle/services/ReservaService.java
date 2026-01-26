@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gasber.appaddle.dtos.ReservaDTO;
 import com.gasber.appaddle.dtos.ReservaRequestDTO;
@@ -19,6 +20,7 @@ import com.gasber.appaddle.repositories.AdministradorRepository;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+
 
 @Service
 public class ReservaService {
@@ -149,6 +151,7 @@ public class ReservaService {
     }
 
     // 5. Eliminar reserva
+    @Transactional
     public void eliminarReserva(Long id, String token) {
   
         // Obtener admin desde token
@@ -165,7 +168,10 @@ public class ReservaService {
         throw new RuntimeException("No podés eliminar una reserva que no es tuya");
     }
 
-    reservaRepository.delete(reserva);
+    reserva.setEstado(EstadoReserva.CANCELADA);
+    reserva.setFechaCancelacion(LocalDateTime.now());
+
+    reservaRepository.save(reserva);
     }
 
     // ----------------------------

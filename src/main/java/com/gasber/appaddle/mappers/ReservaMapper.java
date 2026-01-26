@@ -20,6 +20,7 @@ public class ReservaMapper {
         dto.setFechaHoraInicio(reserva.getFechaHoraInicio());
         dto.setFechaHoraFin(reserva.getFechaHoraFin()); //La duracion se calcula aca. (HoraInicio + 90min)
         dto.setEstado(reserva.getEstado());
+        dto.setFechaCancelacion(reserva.getFechaCancelacion());
 
 
         // CanchaDTO (solo id, nombre) ----

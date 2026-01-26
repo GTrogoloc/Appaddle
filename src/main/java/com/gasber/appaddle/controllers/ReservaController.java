@@ -100,19 +100,20 @@ public class ReservaController {
         return ResponseEntity.ok(response);
     }
 
-    // Eliminar una reserva (Requiere token)
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> eliminarReserva(
-        @PathVariable Long id,
-        @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        reservaService.eliminarReserva(id, token);
-        ApiResponse<String> response = new ApiResponse<>(
-            200,
-            "Reserva eliminada exitosamente",
-            null
-        );
-        return ResponseEntity.ok(response);
-    }
-    }
+// Cancelar una reserva (NO se borra)
+@PutMapping("/{id}/cancelar")
+public ResponseEntity<ApiResponse<String>> cancelarReserva(
+    @PathVariable Long id,
+    @RequestHeader("Authorization") String authHeader) {
+
+    String token = authHeader.replace("Bearer ", "");
+    reservaService.eliminarReserva(id, token);
+
+    ApiResponse<String> response = new ApiResponse<>(
+        200,
+        "Reserva cancelada exitosamente",
+        null
+    );
+    return ResponseEntity.ok(response);
+    }}
 

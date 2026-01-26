@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Column;
 
+
 @Entity
 @Table(name = "reservas")
 public class Reserva {
@@ -52,6 +53,9 @@ public class Reserva {
 
     @Enumerated(EnumType.STRING)
     private EstadoReserva estado = EstadoReserva.RESERVADA;
+
+    @Column (name = "fecha_cancelacion")
+    private LocalDateTime fechaCancelacion;
 
     public Reserva() {}
 
@@ -130,6 +134,14 @@ public class Reserva {
 
     public void setEstado(EstadoReserva estado) {
         this.estado = estado;
+    }
+
+    public LocalDateTime getFechaCancelacion() {
+        return fechaCancelacion;
+    }
+
+    public void setFechaCancelacion(LocalDateTime fechaCancelacion) {
+        this.fechaCancelacion = fechaCancelacion;
     }
     
 }

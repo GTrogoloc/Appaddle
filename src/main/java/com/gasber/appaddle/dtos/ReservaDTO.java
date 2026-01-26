@@ -16,6 +16,7 @@ public class ReservaDTO {
     private EstadoReserva estado;
     private CanchaDTO cancha;
     private AdministradorDTO administrador;
+    private LocalDateTime fechaCancelacion;
 
     public ReservaDTO() {}
 
@@ -72,6 +73,14 @@ public class ReservaDTO {
 
     public void setAdministrador(AdministradorDTO administrador) {
         this.administrador = administrador;
+    }
+
+    public LocalDateTime getFechaCancelacion() {
+        return fechaCancelacion;
+    }
+
+    public void setFechaCancelacion(LocalDateTime fechaCancelacion) {
+        this.fechaCancelacion = fechaCancelacion;
     }
 
     
