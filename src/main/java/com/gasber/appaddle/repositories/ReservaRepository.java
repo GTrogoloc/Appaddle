@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 
 import com.gasber.appaddle.models.Administrador;
 import com.gasber.appaddle.models.Cancha;
+import com.gasber.appaddle.models.EstadoPago;
 import com.gasber.appaddle.models.EstadoReserva;
 import com.gasber.appaddle.models.Reserva;
 
@@ -18,4 +19,11 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     
     // Busca todas las reservas de un administrador
     List<Reserva> findByAdministrador(Administrador administrador);
+
+    // aca el sheduler solo revisa las reservas que estan pendientes de pago
+    List<Reserva> findByEstadoPagoAndEstado(
+        EstadoPago estadoPago,
+        EstadoReserva estado
+);
+
 }

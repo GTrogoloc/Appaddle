@@ -56,6 +56,24 @@ public class Reserva {
 
     @Column (name = "fecha_cancelacion")
     private LocalDateTime fechaCancelacion;
+     
+    // DATOS DE PAGO
+@Column(name = "precio_total")
+private Double precioTotal;
+
+@Column(name = "senia_total")
+private Double seniaTotal;
+
+@Enumerated(EnumType.STRING)
+@Column(name = "estado_pago")
+private EstadoPago estadoPago = EstadoPago.PENDIENTE;
+
+@Column(name = "fecha_creacion")
+private LocalDateTime fechaCreacion;
+
+@Column(name = "fecha_limite_pago")
+private LocalDateTime fechaLimitePago;
+
 
     public Reserva() {}
 
@@ -143,5 +161,47 @@ public class Reserva {
     public void setFechaCancelacion(LocalDateTime fechaCancelacion) {
         this.fechaCancelacion = fechaCancelacion;
     }
+
+  //GETTERS Y SETTERS DE PAGOS
+  public Double getPrecioTotal() {
+    return precioTotal;
+}
+
+public void setPrecioTotal(Double precioTotal) {
+    this.precioTotal = precioTotal;
+}
+
+public Double getSeniaTotal() {
+    return seniaTotal;
+}
+
+public void setSeniaTotal(Double seniaTotal) {
+    this.seniaTotal = seniaTotal;
+}
+
+public EstadoPago getEstadoPago() {
+    return estadoPago;
+}
+
+public void setEstadoPago(EstadoPago estadoPago) {
+    this.estadoPago = estadoPago;
+}
+
+public LocalDateTime getFechaCreacion() {
+    return fechaCreacion;
+}
+
+public void setFechaCreacion(LocalDateTime fechaCreacion) {
+    this.fechaCreacion = fechaCreacion;
+}
+
+public LocalDateTime getFechaLimitePago() {
+    return fechaLimitePago;
+}
+
+public void setFechaLimitePago(LocalDateTime fechaLimitePago) {
+    this.fechaLimitePago = fechaLimitePago;
+}
+
     
 }

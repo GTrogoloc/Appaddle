@@ -17,6 +17,10 @@ import com.gasber.appaddle.repositories.CanchaRepository;
 import com.gasber.appaddle.repositories.ReservaRepository;
 import com.gasber.appaddle.security.JwtUtil;
 import com.gasber.appaddle.repositories.AdministradorRepository;
+import com.gasber.appaddle.services.ConfiguracionPagosService;
+import com.gasber.appaddle.models.ConfiguracionPagos;
+import com.gasber.appaddle.models.EstadoPago;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -29,15 +33,17 @@ public class ReservaService {
     private final CanchaRepository canchaRepository;
     private final AdministradorRepository administradorRepository;
     private final JwtUtil jwtUtil;
+    private final ConfiguracionPagosService configuracionPagosService;
 
     private static final int DURACION_FIJA_MINUTOS = 90; // 🔹 Duración fija
 
     public ReservaService(ReservaRepository reservaRepository, CanchaRepository canchaRepository, AdministradorRepository administradorRepository,
-            JwtUtil jwtUtil) {
+            JwtUtil jwtUtil, ConfiguracionPagosService configuracionPagosService) {
         this.reservaRepository = reservaRepository;
         this.canchaRepository = canchaRepository;
         this.administradorRepository = administradorRepository;
         this.jwtUtil = jwtUtil;
+        this.configuracionPagosService = configuracionPagosService;
     }
 
     // Método privado para token
@@ -83,7 +89,7 @@ public class ReservaService {
              LocalDateTime inicio = dto.getFechaHoraInicio().truncatedTo(ChronoUnit.MINUTES);
 
         // Validar que la cancha esté libre para el rango horario
-        if (!isCanchaDisponible(cancha, dto.getFechaHoraInicio())) {
+        if (!isCanchaDisponible(cancha, inicio)) {
             throw new RuntimeException("La cancha no está disponible en el horario solicitado");
         }
 
@@ -96,6 +102,19 @@ public class ReservaService {
         reserva.setFechaHoraInicio(inicio);
         reserva.setFechaHoraFin(inicio.plusMinutes(DURACION_FIJA_MINUTOS));
         reserva.setEstado(EstadoReserva.RESERVADA);  // Estado inicial
+
+        ConfiguracionPagos config = configuracionPagosService.obtenerConfiguracion();
+
+reserva.setPrecioTotal(config.getPrecioTurno());
+reserva.setSeniaTotal(config.getSeniaTurno());
+
+LocalDateTime ahora = LocalDateTime.now();
+
+reserva.setFechaCreacion(ahora);
+
+reserva.setFechaLimitePago(
+        reserva.getFechaHoraInicio().minusHours(config.getHorasCancelacion())
+);
         
         Reserva guardada = reservaRepository.save(reserva);
 
@@ -174,6 +193,54 @@ public class ReservaService {
     reservaRepository.save(reserva);
     }
 
+    // MARCAR SEÑA PAGADA DE LA RESERVA
+    public ReservaDTO marcarSeniaPagada(Long id, String token) {
+
+    Administrador admin = obtenerAdministradorDesdeToken(token);
+
+    Reserva reserva = reservaRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+    if (!reserva.getAdministrador().getId().equals(admin.getId())) {
+        throw new RuntimeException("No podés modificar una reserva que no es tuya");
+    }
+
+    if (reserva.getEstado() != EstadoReserva.RESERVADA) {
+        throw new RuntimeException("La reserva no está en estado RESERVADA");
+    }
+
+    reserva.setEstadoPago(EstadoPago.SENIA_PAGADA);
+
+    Reserva guardada = reservaRepository.save(reserva);
+
+    return ReservaMapper.toDTO(guardada);
+}
+
+   //MARCAR PAGO COMPLETO DE LA RESERVA 
+
+   public ReservaDTO marcarPagoCompleto(Long id, String token) {
+
+    Administrador admin = obtenerAdministradorDesdeToken(token);
+
+    Reserva reserva = reservaRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+    if (!reserva.getAdministrador().getId().equals(admin.getId())) {
+        throw new RuntimeException("No podés modificar una reserva que no es tuya");
+    }
+
+    if (reserva.getEstado() != EstadoReserva.RESERVADA) {
+        throw new RuntimeException("La reserva no está en estado RESERVADA");
+    }
+
+    reserva.setEstadoPago(EstadoPago.PAGADO);
+
+    Reserva guardada = reservaRepository.save(reserva);
+
+    return ReservaMapper.toDTO(guardada);
+}
+
+
     // ----------------------------
     // Métodos privados
 
@@ -230,6 +297,30 @@ public class ReservaService {
         }
         return true;
     }
+
+    //Scheduled para actualizar el estado de las reservas
+    @Scheduled(fixedRate = 600000) // cada 10 minutos
+    public void cancelarReservasPendientes() {
+
+    List<Reserva> reservas = reservaRepository.findByEstadoPagoAndEstado(
+            EstadoPago.PENDIENTE,
+            EstadoReserva.RESERVADA
+    );
+
+    LocalDateTime ahora = LocalDateTime.now();
+
+    for (Reserva r : reservas) {
+
+        if (r.getFechaLimitePago() != null &&
+            ahora.isAfter(r.getFechaLimitePago())) {
+
+            r.setEstado(EstadoReserva.CANCELADA);
+            r.setFechaCancelacion(ahora);
+
+            reservaRepository.save(r);
+        }
+    }
+}
     
 }
 

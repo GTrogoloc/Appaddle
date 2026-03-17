@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import com.gasber.appaddle.models.EstadoReserva;
 
+import com.gasber.appaddle.models.EstadoPago;
+
 
 public class ReservaDTO {
     private Long id;
@@ -17,6 +19,9 @@ public class ReservaDTO {
     private CanchaDTO cancha;
     private AdministradorDTO administrador;
     private LocalDateTime fechaCancelacion;
+    private Double precioTotal;
+    private Double seniaTotal;
+    private EstadoPago estadoPago;
 
     public ReservaDTO() {}
 
@@ -81,6 +86,30 @@ public class ReservaDTO {
 
     public void setFechaCancelacion(LocalDateTime fechaCancelacion) {
         this.fechaCancelacion = fechaCancelacion;
+    }
+
+    public Double getPrecioTotal() {
+        return precioTotal;
+    }
+    
+    public void setPrecioTotal(Double precioTotal) {
+        this.precioTotal = precioTotal;
+    }
+    
+    public Double getSeniaTotal() {
+        return seniaTotal;
+    }
+    
+    public void setSeniaTotal(Double seniaTotal) {
+        this.seniaTotal = seniaTotal;
+    }
+    
+    public EstadoPago getEstadoPago() {
+        return estadoPago;
+    }
+    
+    public void setEstadoPago(EstadoPago estadoPago) {
+        this.estadoPago = estadoPago;
     }
 
     

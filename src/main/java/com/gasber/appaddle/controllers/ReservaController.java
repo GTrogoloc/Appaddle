@@ -115,5 +115,43 @@ public ResponseEntity<ApiResponse<String>> cancelarReserva(
         null
     );
     return ResponseEntity.ok(response);
-    }}
+    }
+
+    @PutMapping("/{id}/senia")
+public ResponseEntity<ApiResponse<ReservaDTO>> marcarSenia(
+    @PathVariable Long id,
+    @RequestHeader("Authorization") String authHeader) {
+
+    String token = authHeader.replace("Bearer ", "");
+
+    ReservaDTO reserva = reservaService.marcarSeniaPagada(id, token);
+
+    ApiResponse<ReservaDTO> response = new ApiResponse<>(
+        200,
+        "Seña registrada correctamente",
+        reserva
+    );
+
+    return ResponseEntity.ok(response);
+}
+
+@PutMapping("/{id}/pagar")
+public ResponseEntity<ApiResponse<ReservaDTO>> marcarPago(
+    @PathVariable Long id,
+    @RequestHeader("Authorization") String authHeader) {
+
+    String token = authHeader.replace("Bearer ", "");
+
+    ReservaDTO reserva = reservaService.marcarPagoCompleto(id, token);
+
+    ApiResponse<ReservaDTO> response = new ApiResponse<>(
+        200,
+        "Pago registrado correctamente",
+        reserva
+    );
+
+    return ResponseEntity.ok(response);
+}
+
+}
 

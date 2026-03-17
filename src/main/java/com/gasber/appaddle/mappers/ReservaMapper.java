@@ -22,6 +22,11 @@ public class ReservaMapper {
         dto.setEstado(reserva.getEstado());
         dto.setFechaCancelacion(reserva.getFechaCancelacion());
 
+        // DATOS DE PAGO
+        dto.setPrecioTotal(reserva.getPrecioTotal());
+        dto.setSeniaTotal(reserva.getSeniaTotal());
+        dto.setEstadoPago(reserva.getEstadoPago());
+
 
         // CanchaDTO (solo id, nombre) ----
         CanchaDTO canchaDTO = new CanchaDTO();
