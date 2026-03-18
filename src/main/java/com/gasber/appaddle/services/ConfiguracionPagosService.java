@@ -18,18 +18,32 @@ public class ConfiguracionPagosService {
     // Obtener configuración actual
     public ConfiguracionPagos obtenerConfiguracion() {
         return configuracionPagosRepository.findAll()
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No hay configuración de pagos cargada"));
+            .stream()
+            .findFirst()
+            .orElseGet(() -> {
+                ConfiguracionPagos config = new ConfiguracionPagos();
+                config.setPrecioTurno(28000.0);
+                config.setSeniaTurno(10000.0);
+                config.setHorasCancelacion(8);
+    
+                return configuracionPagosRepository.save(config);
+            });
     }
 
     // Actualizar configuración
-    public ConfiguracionPagos actualizarConfiguracion(ConfiguracionPagos config) {
-        return configuracionPagosRepository.save(config);
+    public ConfiguracionPagos actualizarConfiguracion(ConfiguracionPagos nueva) {
+
+        ConfiguracionPagos actual = obtenerConfiguracion();
+    
+        actual.setPrecioTurno(nueva.getPrecioTurno());
+        actual.setSeniaTurno(nueva.getSeniaTurno());
+        actual.setHorasCancelacion(nueva.getHorasCancelacion());
+    
+        return configuracionPagosRepository.save(actual);
     }
 
     @PostConstruct
-public void inicializarConfiguracion() {
+    public void inicializarConfiguracion() {
 
     if (configuracionPagosRepository.count() == 0) {
 
