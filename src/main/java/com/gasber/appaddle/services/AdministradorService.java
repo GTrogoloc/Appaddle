@@ -7,6 +7,8 @@ import com.gasber.appaddle.dtos.LoginResponseDTO;
 import com.gasber.appaddle.models.Administrador;
 import com.gasber.appaddle.repositories.AdministradorRepository;
 import com.gasber.appaddle.security.JwtUtil;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 
 import org.springframework.stereotype.Service;
 
