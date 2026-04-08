@@ -28,7 +28,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
         String path = request.getRequestURI();
 
-        // rutas públicas
 // rutas públicas
 if (path.contains("/admin/login") ||
     path.contains("/admin/crear") ||

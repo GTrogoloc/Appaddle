@@ -29,7 +29,7 @@ public class CanchaService {
 
     public CanchaDTO crearCancha(CanchaDTO dto) {
         Cancha cancha = CanchaMapper.toEntity(dto);
-        cancha.setActiva(true); // por defecto
+        cancha.setActiva(true); 
         return CanchaMapper.toDTO(canchaRepository.save(cancha));
     }
 

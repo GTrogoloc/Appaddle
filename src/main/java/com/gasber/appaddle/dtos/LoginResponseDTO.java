@@ -10,7 +10,8 @@ public class LoginResponseDTO {
         this.token = token;
         this.administrador = administrador;
     }
-//getters y setters!
+
+    //getters y setters!
     public String getToken() {
         return token;
     }

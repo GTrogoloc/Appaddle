@@ -35,7 +35,7 @@ public class ReservaService {
     private final JwtUtil jwtUtil;
     private final ConfiguracionPagosService configuracionPagosService;
 
-    private static final int DURACION_FIJA_MINUTOS = 90; // 🔹 Duración fija
+    private static final int DURACION_FIJA_MINUTOS = 90; // Duración fija
 
     public ReservaService(ReservaRepository reservaRepository, CanchaRepository canchaRepository, AdministradorRepository administradorRepository,
             JwtUtil jwtUtil, ConfiguracionPagosService configuracionPagosService) {
@@ -58,7 +58,7 @@ public class ReservaService {
                 .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
     }
 
-//Listar todas las reservas de un admin
+    // Listar todas las reservas de un admin
     public List<ReservaDTO> listarReservasPorAdmin(String token) {
         Administrador admin = obtenerAdministradorDesdeToken(token);
     
@@ -76,7 +76,7 @@ public class ReservaService {
             .collect(Collectors.toList());
     }
 
-    // 2. Crear reserva (validando disponibilidad)
+    // Crear reserva (validando disponibilidad)
         public ReservaDTO crearReserva(ReservaRequestDTO dto, String token) {
         validarReserva(dto);
 
@@ -93,6 +93,12 @@ public class ReservaService {
             throw new RuntimeException("La cancha no está disponible en el horario solicitado");
         }
 
+        LocalDateTime finReserva = inicio.plusMinutes(DURACION_FIJA_MINUTOS);
+
+        if (!finReserva.isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("No se pueden crear reservas en horarios ya finalizados");
+        }
+
         Reserva reserva = new Reserva();
         reserva.setNombre(dto.getNombre());
         reserva.setApellido(dto.getApellido());
@@ -101,7 +107,7 @@ public class ReservaService {
         reserva.setAdministrador(admin);
         reserva.setFechaHoraInicio(inicio);
         reserva.setFechaHoraFin(inicio.plusMinutes(DURACION_FIJA_MINUTOS));
-        reserva.setEstado(EstadoReserva.RESERVADA);  // Estado inicial
+        reserva.setEstado(EstadoReserva.RESERVADA);
 
         ConfiguracionPagos config = configuracionPagosService.obtenerConfiguracion();
 
@@ -121,23 +127,23 @@ reserva.setFechaLimitePago(
         return ReservaMapper.toDTO(guardada); // fechaHoraFin se calcula en el mapper
     }
 
-    // 3. Obtener reserva por ID
+    // Obtener reserva por ID
     public ReservaDTO obtenerPorId(Long id) {
         Reserva reserva = reservaRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
         return ReservaMapper.toDTO(reserva);
     }
 
-    // 4. Actualizar reserva (validando disponibilidad, excluyendo la reserva que se actualiza)
+    // Actualizar reserva (validando disponibilidad, excluyendo la reserva que se actualiza)
     public ReservaDTO actualizarReserva(Long id, ReservaRequestDTO dto, String token) {
         validarReserva(dto);
         
-        //Obtener admin desde token
+        // Obtener admin desde token
         String usuarioAdmin = jwtUtil.obtenerUsuarioDelToken(token);
         Administrador admin = administradorRepository.findByUsuario(usuarioAdmin)
             .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
         
-        //Obtener reserva existente
+        // Obtener reserva existente
         Reserva reservaExistente = reservaRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
 
@@ -163,13 +169,12 @@ reserva.setFechaLimitePago(
         reservaExistente.setCancha(cancha);
         reservaExistente.setFechaHoraInicio(inicio);
         reservaExistente.setFechaHoraFin(inicio.plusMinutes(DURACION_FIJA_MINUTOS));
-        // Opcional: actualizar estado si querés, o dejarlo igual
 
         Reserva actualizada = reservaRepository.save(reservaExistente);
         return ReservaMapper.toDTO(actualizada);
     }
 
-    // 5. Eliminar reserva
+    // Eliminar reserva
     @Transactional
     public void eliminarReserva(Long id, String token) {
   
@@ -216,8 +221,7 @@ reserva.setFechaLimitePago(
     return ReservaMapper.toDTO(guardada);
 }
 
-   //MARCAR PAGO COMPLETO DE LA RESERVA 
-
+   // MARCAR PAGO COMPLETO DE LA RESERVA 
    public ReservaDTO marcarPagoCompleto(Long id, String token) {
 
     Administrador admin = obtenerAdministradorDesdeToken(token);
@@ -241,9 +245,8 @@ reserva.setFechaLimitePago(
 }
 
 
-    // ----------------------------
+    
     // Métodos privados
-
     // Validar campos mínimos
     private void validarReserva(ReservaRequestDTO dto) {
         if (dto.getNombre() == null || dto.getNombre().isBlank()) {

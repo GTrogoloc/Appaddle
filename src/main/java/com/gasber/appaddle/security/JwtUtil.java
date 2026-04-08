@@ -14,7 +14,7 @@ import java.security.Key;
 @Component
 public class JwtUtil {
 
-// Clave secreta para firmar el token (idealmente ponerla en application.properties)
+    // Clave secreta
     private final String secret = "MiClaveUltraSecretaQueDebeSerMuyLargaParaHS256";
 
     private final Key key = Keys.hmacShaKeyFor(secret.getBytes());

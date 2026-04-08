@@ -28,14 +28,14 @@ public class ReservaMapper {
         dto.setEstadoPago(reserva.getEstadoPago());
 
 
-        // CanchaDTO (solo id, nombre) ----
+        // CanchaDTO (solo id, nombre)
         CanchaDTO canchaDTO = new CanchaDTO();
         canchaDTO.setId(reserva.getCancha().getId());
         canchaDTO.setNombre(reserva.getCancha().getNombre());
         canchaDTO.setActiva(reserva.getCancha().isActiva());
         dto.setCancha(canchaDTO);
 
-        // AdministradorDTO (solo id, usuario) ----
+        // AdministradorDTO (solo id, usuario)
         AdministradorDTO adminDTO = new AdministradorDTO();
         adminDTO.setId(reserva.getAdministrador().getId());
         adminDTO.setUsuario(reserva.getAdministrador().getUsuario());
@@ -50,7 +50,7 @@ public class ReservaMapper {
         reserva.setApellido(dto.getApellido());
         reserva.setTelefono(dto.getTelefono());
         reserva.setFechaHoraInicio(dto.getFechaHoraInicio());
-        reserva.setFechaHoraFin(dto.getFechaHoraInicio().plusMinutes(90)); // calculamos solo aquí //Calcular automáticamente fechaHoraFin sumando 90 minutos
+        reserva.setFechaHoraFin(dto.getFechaHoraInicio().plusMinutes(90)); 
         reserva.setCancha(cancha);
         reserva.setAdministrador(administrador);
 

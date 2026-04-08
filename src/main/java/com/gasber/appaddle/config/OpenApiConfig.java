@@ -14,7 +14,7 @@ public class OpenApiConfig {
     @Bean
     public GroupedOpenApi api() {
         return GroupedOpenApi.builder()
-                .group("appaddle") // ⚠️ Este valor NO puede estar vacío
+                .group("appaddle") 
                 .pathsToMatch("/**")
                 .build();
     }

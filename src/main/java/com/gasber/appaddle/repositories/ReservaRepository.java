@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     
-    // Busca todas las reservas para una cancha en estado RESERVADA o EN_CURSO (es decir, ocupadas)
+    // Busca todas las reservas para una cancha en estado RESERVADA o EN_CURSO (osea, ocupadas)
     List<Reserva> findByCanchaAndEstadoIn(Cancha cancha, List<EstadoReserva> estados);
     
     // Busca todas las reservas de un administrador
